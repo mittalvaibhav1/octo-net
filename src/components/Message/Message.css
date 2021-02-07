@@ -9,8 +9,13 @@
     margin-left: 20px;
 }
 
+.message__info > h4 {
+    display: flex;
+    align-items: center;
+}
+
 .message__timestamp {
-    color: gray;
+    color: rgba(128, 128, 128, 0.452);
     margin-left: 20px;
-    font-size: x-small;
+    font-size: xx-small;
 }
