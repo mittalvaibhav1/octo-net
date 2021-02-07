@@ -17,6 +17,7 @@
 
 .sidebar__channels {
     flex: 1;
+    user-select: none;
 }
 
 .sidebar__icon {
@@ -45,6 +46,7 @@
     color: white;
 }
 .sidebar__voice {
+    user-select: none;
     border-bottom: 1px solid #c9d1d90e;
 }
 
