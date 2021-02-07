@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import AddIcon from '@material-ui/icons/Add';
 import './Sidebar.css';
-import SidebarChannel from './SidebarChannel/SidebarChannel';
+import SidebarChannel from '../SidebarChannel/SidebarChannel';
 import ChevronRightIcon from '@material-ui/icons/ChevronRight';
 import SignalCellularAltIcon from '@material-ui/icons/SignalCellularAlt';
 import InfoOutlinedIcon from '@material-ui/icons/InfoOutlined';
