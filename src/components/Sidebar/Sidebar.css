@@ -36,3 +36,81 @@
     color: #c9d1d9;
 }
 
+.sidebar__channelsHeader > h4{
+    cursor: pointer;
+}
+
+.sidebar__channelsHeader:hover > h4{
+    cursor: pointer;
+    color: white;
+}
+.sidebar__voice {
+    border-bottom: 1px solid #c9d1d90e;
+}
+
+.sidebar__voice, 
+.sidebar__profile {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: #c9d1d9;
+    padding: 10px;
+    background: #0d111783;
+}
+
+.sidebar__voiceInfo {
+    flex: 1;
+    padding: 10px;
+}
+
+.sidebar__voiceIcon {
+    color:  #31ec98;
+}
+
+.sidebar__voiceInfo > h3 {
+    color:  #31ec98;
+}
+
+.sidebar__voiceInfo > p {
+    font-size: smaller;
+}
+
+.sidebar__voiceIcons > .MuiSvgIcon-root {
+    padding: 10px;
+    cursor: pointer;
+    color: #c9d1d9d2;
+}
+
+.sidebar__voiceIcons > .MuiSvgIcon-root {
+    padding: 10px;
+}
+
+.sidebar__voiceInfoIcon:hover {
+    color: rgb(255, 165, 0);
+}
+
+.sidebar__voiceDisconnect:hover {
+    color: tomato;
+}
+
+.sidebar__profileInfo {
+    flex: 1;
+    padding: 10px;
+}
+
+.sidebar__profileInfo > h3 {
+    color: white;
+}
+
+.sidebar__profileIcons > .MuiSvgIcon-root {
+    padding: 10px;
+    cursor: pointer;
+    color: #c9d1d9d2;;
+}
+
+.sidebar__profileIcons > .MuiSvgIcon-root:hover {
+    color: white;
+}
+
+
+
