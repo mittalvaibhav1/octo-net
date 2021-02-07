@@ -9,9 +9,11 @@
     align-items: center;
     cursor: pointer;
     color: #c9d1d9d2;
+    text-align: center;
 }
 
-.sidebarChannel__hash {
-    font-size: 25px;
+.sidebarChannel__hash > svg {
     padding: 8px;
+    padding-top: 12px;
 }
+
