@@ -1,10 +1,16 @@
 import React from 'react'
 import './SidebarChannel.css';
 
-function SidebarChannel({ id, channel, textChannel = false, onClick }) {
+function SidebarChannel({ id, channel, textChannel = false, setVoiceConnected = null }) {
+
+    const connectToChannel = () => {
+        setVoiceConnected([
+            channel.channelName
+        ]);
+    }
 
     return (
-        <div onClick= { onClick } className="sidebarChannel">
+        <div key={id} onClick= { setVoiceConnected &&  connectToChannel } className="sidebarChannel">
             <h4>
                 <span className="sidebarChannel__hash">
                     { textChannel ? <svg width="24" height="24" viewBox="0 0 24 24">
@@ -18,7 +24,7 @@ function SidebarChannel({ id, channel, textChannel = false, onClick }) {
                         </svg>
                     }
                 </span>
-                <span>music</span>
+                <span>{ channel.channelName }</span>
             </h4>
         </div>
     )

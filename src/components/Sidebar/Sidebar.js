@@ -15,13 +15,19 @@ import MicOffIcon from '@material-ui/icons/MicOff';
 import disconnectSound  from '../../sounds/disconnectSound.mp3';
 import connectSound from '../../sounds/connectSound.mp3';
 import { AnimatePresence, motion } from 'framer-motion';
+import { selectUser } from '../../features/userSlice';
+import { useSelector } from 'react-redux';
+import db, { auth } from '../../firebase/firebase';
 
 function Sidebar() {
 
     const [showTextChannels, setShowTextChannels] = useState(false);
     const [showVoiceChannels, setShowVoiceChannels] = useState(false);
     const [micStatus, setMicStatus] = useState(false);
-    const [voiceConnected, setVoiceConnected] = useState(false);
+    const [voiceConnected, setVoiceConnected] = useState(null);
+    const [textChannels, setTextChannels] = useState([]);
+    const [voiceChannels, setVoiceChannels] = useState([]);
+    const user = useSelector(selectUser);
     const disconnectAudio = new Audio(disconnectSound);
     const connectAudio = new Audio(connectSound);
     const isMounted = useRef(null);
@@ -57,10 +63,25 @@ function Sidebar() {
         setMicStatus(!micStatus);
     }
     const disconnectVoiceChannel = () => {
-        setVoiceConnected(false);
+        setVoiceConnected(null);
     }
-    const connectVoiceChannel = () => {
-        setVoiceConnected(true);
+
+    const handleAddTextChannel = () => {
+        const channelName = prompt('Enter the new channel name');
+        if(channelName) {
+            db.collection('textChannels').add({
+                channelName: channelName
+            });
+        }
+    }
+
+    const handleAddVoiceChannel = () => {
+        const channelName = prompt('Enter the new channel name');
+        if(channelName) {
+            db.collection('voiceChannels').add({
+                channelName: channelName
+            });
+        }
     }
 
     useEffect(() => {
@@ -73,7 +94,6 @@ function Sidebar() {
             }
         }
     }, [micStatus]);
-
 
     useEffect(() => {
         if(isMounted.current) {
@@ -89,6 +109,25 @@ function Sidebar() {
         }
     }, [voiceConnected]);
 
+    useEffect(() => {
+        db.collection('textChannels').onSnapshot((snapshot) => {
+            setTextChannels(snapshot.docs.map((doc) => {
+                return {
+                    id: doc.id,
+                    channel: doc.data(),
+                }
+            }))
+        })
+        db.collection('voiceChannels').onSnapshot((snapshot) => {
+            setVoiceChannels(snapshot.docs.map((doc) => {
+                return {
+                    id: doc.id,
+                    channel: doc.data(),
+                }
+            }))
+        })
+    }, []);
+
     return (
         <div className="sidebar">
             <div className="sidebar__top">
@@ -100,30 +139,34 @@ function Sidebar() {
                     <div className="sidebar__channelsHeader">
                         { showTextChannels ? <ExpandMoreIcon onClick = { toggleTextChannels } className="sidebar__icon" /> : <ChevronRightIcon onClick = { toggleTextChannels } className="sidebar__icon" /> }
                         <h4 onClick = { toggleTextChannels } >Text Channels</h4>
-                        <AddIcon className="sidebar__icon" />
+                        <AddIcon onClick={ handleAddTextChannel } className="sidebar__icon" />
                     </div>
                     <AnimatePresence exitBeforeEnter>
                         { showTextChannels && <motion.div initial="hidden" exit="exit"
                             animate="visible"  variants={ channelVariants } className="sidebar__channelsList">
-                            <SidebarChannel textChannel="true" />
-                            <SidebarChannel textChannel="true"/>
-                            <SidebarChannel textChannel="true"/>
-                        </motion.div> }
+                                {   textChannels.map((channel) => (
+                                        <SidebarChannel key={ channel.id } channel={ channel.channel } id={ channel.id } textChannel="true" />
+                                    ))
+                                }
+                            </motion.div> 
+                        }
                     </AnimatePresence>
                 </div>
                 <div className="sidebar__voiceChannels">
                     <div  className="sidebar__channelsHeader">
                         { showVoiceChannels ? <ExpandMoreIcon  onClick = { toggleVoiceChannels } className="sidebar__icon" /> : <ChevronRightIcon onClick = { toggleVoiceChannels } className="sidebar__icon" /> }
                         <h4 onClick = { toggleVoiceChannels } >Voice Channels</h4>
-                        <AddIcon className="sidebar__icon" />
+                        <AddIcon onClick={ handleAddVoiceChannel } className="sidebar__icon" />
                     </div>
                     <AnimatePresence exitBeforeEnter>
                         { showVoiceChannels && <motion.div initial="hidden" exit="exit" 
                             animate="visible"  variants={ channelVariants } className="sidebar__channelsList">
-                            <SidebarChannel onClick = { connectVoiceChannel } />
-                            <SidebarChannel onClick = { connectVoiceChannel } />
-                            <SidebarChannel onClick = { connectVoiceChannel } />
-                        </motion.div>  }
+                                {   voiceChannels.map((channel) => (
+                                        <SidebarChannel key={ channel.id } channel={ channel.channel } id={ channel.id } setVoiceConnected = { setVoiceConnected } />
+                                    )) 
+                                }   
+                            </motion.div>  
+                        }
                     </AnimatePresence>
                 </div>
             </div>
@@ -131,7 +174,7 @@ function Sidebar() {
                         <SignalCellularAltIcon  className="sidebar__voiceIcon" fontSize="large"/>
                         <div className="sidebar__voiceInfo">
                             <h3>Voice Connected</h3>
-                            <p>Music / XTC</p>
+                            <p>{ voiceConnected[0] } / XTC</p>
                         </div>
                         <div className="sidebar__voiceIcons">
                             <InfoOutlinedIcon className="sidebar__voiceInfoIcon" />
@@ -140,9 +183,9 @@ function Sidebar() {
                 </div> 
             }
             <div className="sidebar__profile">
-                <Avatar src='./IronMan.jpg' />
+                <Avatar onClick = { () => auth.signOut() } src={ user.photo } className="sidebar__avatar" />
                 <div className="sidebar__profileInfo">
-                    <h3>Dean Winchester</h3>
+                    <h3>{ user.displayName }</h3>
                     <p>#8733</p>
                 </div>
                 <div className="sidebar__profileIcons">
