@@ -6,7 +6,9 @@
     width: 100vw;
     background: #0D1117;
 }
-
+.login__logo > img {
+    object-fit: contain;
+}
 .login__container {
     background: #19202b;
     height: 75vh;
@@ -39,6 +41,10 @@
     background-color: #0D1117 !important;
     color: white !important;
     text-transform: capitalize !important;
+}
+
+.login__button:hover {
+    background-color: #0d11178c !important;
 }
 
 .login__button > span > img {
