@@ -1,6 +1,5 @@
 import React from 'react'
 import './SidebarChannel.css';
-import { motion } from 'framer-motion';
 
 function SidebarChannel({ id, channel, textChannel = false, onClick }) {
 
