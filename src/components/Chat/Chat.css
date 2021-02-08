@@ -49,5 +49,30 @@
 }
 
 .chat__messages {
-    flex: 1;
+    height: 73.8vh;
+    overflow-y: auto;
+    scroll-snap-type: y mandatory;
+}
+
+.chat__messages > div:last-child {
+    scroll-snap-align: end;
+}
+
+::-webkit-scrollbar {
+    width: 12px;
+}
+
+::-webkit-scrollbar-track {
+    background:#161B22;
+    border-radius: 2px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #0d1016;
+    border-radius: 20px;
+    border: 3px solid #161B22;
+}  
+
+::-webkit-scrollbar-thumb:hover {
+    background: rgb(8, 8, 15);
 }
