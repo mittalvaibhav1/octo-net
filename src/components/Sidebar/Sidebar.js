@@ -14,7 +14,7 @@ import SettingsIcon from '@material-ui/icons/Settings';
 import MicOffIcon from '@material-ui/icons/MicOff';
 import disconnectSound  from '../../sounds/disconnectSound.mp3';
 import connectSound from '../../sounds/connectSound.mp3';
-import { motion } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 
 function Sidebar() {
 
@@ -29,17 +29,21 @@ function Sidebar() {
     const channelVariants = {
         hidden: {
             opactiy: 0,
+            y: -10
         },
         visible: {
             opacity: 1,
+            y: 0,
             transition: {
                 type: 'spring',
                 mass: 0.4,
+                stiffness: 220,
                 damping: 8,
-                duration: 1,
-                when: "beforeChildren",
-                staggerChildren: 1
             }
+        },
+        exit: {
+            opacity: 0,
+            y: -10
         }
     }
 
@@ -98,11 +102,14 @@ function Sidebar() {
                         <h4 onClick = { toggleTextChannels } >Text Channels</h4>
                         <AddIcon className="sidebar__icon" />
                     </div>
-                    { showTextChannels && <div className="sidebar__channelsList">
-                        <SidebarChannel textChannel="true" />
-                        <SidebarChannel textChannel="true"/>
-                        <SidebarChannel textChannel="true"/>
-                    </div> }
+                    <AnimatePresence exitBeforeEnter>
+                        { showTextChannels && <motion.div initial="hidden" exit="exit"
+                            animate="visible"  variants={ channelVariants } className="sidebar__channelsList">
+                            <SidebarChannel textChannel="true" />
+                            <SidebarChannel textChannel="true"/>
+                            <SidebarChannel textChannel="true"/>
+                        </motion.div> }
+                    </AnimatePresence>
                 </div>
                 <div className="sidebar__voiceChannels">
                     <div  className="sidebar__channelsHeader">
@@ -110,12 +117,14 @@ function Sidebar() {
                         <h4 onClick = { toggleVoiceChannels } >Voice Channels</h4>
                         <AddIcon className="sidebar__icon" />
                     </div>
-                    { showVoiceChannels && <motion.div initial="hidden" 
-                        animate="visible"  variants={ channelVariants } className="sidebar__channelsList">
-                        <SidebarChannel onClick = { connectVoiceChannel } />
-                        <SidebarChannel onClick = { connectVoiceChannel } />
-                        <SidebarChannel onClick = { connectVoiceChannel } />
-                    </motion.div>  }
+                    <AnimatePresence exitBeforeEnter>
+                        { showVoiceChannels && <motion.div initial="hidden" exit="exit" 
+                            animate="visible"  variants={ channelVariants } className="sidebar__channelsList">
+                            <SidebarChannel onClick = { connectVoiceChannel } />
+                            <SidebarChannel onClick = { connectVoiceChannel } />
+                            <SidebarChannel onClick = { connectVoiceChannel } />
+                        </motion.div>  }
+                    </AnimatePresence>
                 </div>
             </div>
             { voiceConnected && <div className="sidebar__voice">

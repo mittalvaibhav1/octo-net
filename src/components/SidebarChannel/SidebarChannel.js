@@ -4,20 +4,8 @@ import { motion } from 'framer-motion';
 
 function SidebarChannel({ id, channel, textChannel = false, onClick }) {
 
-    const channelVariants = {
-        hidden: {
-            opactiy: 0
-        },
-        visible: {
-            opacity: 1,
-            transition: {
-                duration: 4
-            }
-        }
-    }
-
     return (
-        <motion.div variants = { channelVariants } onClick= { onClick } className="sidebarChannel">
+        <div onClick= { onClick } className="sidebarChannel">
             <h4>
                 <span className="sidebarChannel__hash">
                     { textChannel ? <svg width="24" height="24" viewBox="0 0 24 24">
@@ -33,7 +21,7 @@ function SidebarChannel({ id, channel, textChannel = false, onClick }) {
                 </span>
                 <span>music</span>
             </h4>
-        </motion.div>
+        </div>
     )
 }
 
