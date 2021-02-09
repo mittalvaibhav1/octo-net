@@ -18,6 +18,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { selectUser } from '../../features/userSlice';
 import { useSelector } from 'react-redux';
 import db, { auth } from '../../firebase/firebase';
+import { selectVoiceChannelId } from '../../features/appSlice';
 
 function Sidebar() {
 
@@ -31,6 +32,7 @@ function Sidebar() {
     const disconnectAudio = new Audio(disconnectSound);
     const connectAudio = new Audio(connectSound);
     const isMounted = useRef(null);
+    const voiceChannelId = useSelector(selectVoiceChannelId);
 
     const channelVariants = {
         hidden: {
@@ -62,7 +64,14 @@ function Sidebar() {
     const toggleMicStatus = () => {
         setMicStatus(!micStatus);
     }
-    const disconnectVoiceChannel = () => {
+    const disconnectVoiceChannel = async () => {
+        await db.collection('voiceChannels').doc(voiceChannelId).collection('users')
+        .where('user','==', user).get()
+        .then((snapshot) => {
+            snapshot.docs.forEach(async (doc) => {
+                await  db.collection('voiceChannels').doc(voiceChannelId).collection('users').doc(doc.id).delete()
+            })
+        })
         setVoiceConnected(null);
     }
 
@@ -162,7 +171,7 @@ function Sidebar() {
                         { showVoiceChannels && <motion.div initial="hidden" exit="exit" 
                             animate="visible"  variants={ channelVariants } className="sidebar__channelsList">
                                 {   voiceChannels.map((channel) => (
-                                        <SidebarChannel key={ channel.id } channel={ channel.channel } id={ channel.id } setVoiceConnected = { setVoiceConnected } />
+                                        <SidebarChannel key={ channel.id } channel={ channel.channel } id={ channel.id } setVoiceConnected = { setVoiceConnected } user = { user } />
                                     )) 
                                 }   
                             </motion.div>  

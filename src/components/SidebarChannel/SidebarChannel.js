@@ -1,16 +1,36 @@
 import React from 'react'
+import { useDispatch } from 'react-redux';
+import { setChannelInfo, setVoiceChannelInfo } from '../../features/appSlice';
 import './SidebarChannel.css';
+import db  from '../../firebase/firebase';
 
-function SidebarChannel({ id, channel, textChannel = false, setVoiceConnected = null }) {
+function SidebarChannel({ id, channel, textChannel = false, setVoiceConnected = null, user = null }) {
 
-    const connectToChannel = () => {
+    const dispatch = useDispatch();
+
+    const connectToChannel = async () => {
+        await db.collection('voiceChannels').doc(id)
+        .collection('users').add({
+            user: user
+        })
         setVoiceConnected([
             channel.channelName
         ]);
+        dispatch(setVoiceChannelInfo({
+            channelId: id,
+            channelName: channel.channelName
+        }));
+    }
+
+    const setTextChannel = () => {
+        dispatch(setChannelInfo({
+            channelId: id,
+            channelName: channel.channelName
+        }));
     }
 
     return (
-        <div key={id} onClick= { setVoiceConnected &&  connectToChannel } className="sidebarChannel">
+        <div key={id} onClick= { setVoiceConnected ? connectToChannel : setTextChannel } className="sidebarChannel">
             <h4>
                 <span className="sidebarChannel__hash">
                     { textChannel ? <svg width="24" height="24" viewBox="0 0 24 24">
