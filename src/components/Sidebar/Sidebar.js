@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef } from 'react';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import AddIcon from '@material-ui/icons/Add';
 import './Sidebar.css';
-import SidebarChannel from '../SidebarChannel/SidebarChannel';
 import ChevronRightIcon from '@material-ui/icons/ChevronRight';
 import SignalCellularAltIcon from '@material-ui/icons/SignalCellularAlt';
 import InfoOutlinedIcon from '@material-ui/icons/InfoOutlined';
@@ -19,12 +18,14 @@ import { selectUser } from '../../features/userSlice';
 import { useSelector } from 'react-redux';
 import db, { auth } from '../../firebase/firebase';
 import { selectVoiceChannelId } from '../../features/appSlice';
+import TextChannel from '../TextChannel/TextChannel';
+import VoiceChannel from '../VoiceChannel/VoiceChannel';
 
 function Sidebar() {
 
     const [showTextChannels, setShowTextChannels] = useState(false);
     const [showVoiceChannels, setShowVoiceChannels] = useState(false);
-    const [micStatus, setMicStatus] = useState(false);
+    const [micStatus, setMicStatus] = useState(true);
     const [voiceConnected, setVoiceConnected] = useState(null);
     const [textChannels, setTextChannels] = useState([]);
     const [voiceChannels, setVoiceChannels] = useState([]);
@@ -33,6 +34,7 @@ function Sidebar() {
     const connectAudio = new Audio(connectSound);
     const isMounted = useRef(null);
     const voiceChannelId = useSelector(selectVoiceChannelId);
+    const [stream, setStream] = useState(null);
 
     const channelVariants = {
         hidden: {
@@ -62,7 +64,16 @@ function Sidebar() {
         setShowVoiceChannels(!showVoiceChannels);
     }
     const toggleMicStatus = () => {
-        setMicStatus(!micStatus);
+        const toggleVal = !micStatus;
+        setMicStatus(toggleVal);
+        if(micStatus && stream) {
+            stream.getAudioTracks()[0].enabled = true;
+            console.log(stream.getAudioTracks()[0], toggleVal);
+        }
+        else if(stream) {
+            stream.getAudioTracks()[0].enabled = false;
+            console.log(stream.getAudioTracks()[0],  toggleVal);
+        }
     }
     const disconnectVoiceChannel = async () => {
         await db.collection('voiceChannels').doc(voiceChannelId).collection('users')
@@ -154,7 +165,7 @@ function Sidebar() {
                         { showTextChannels && <motion.div initial="hidden" exit="exit"
                             animate="visible"  variants={ channelVariants } className="sidebar__channelsList">
                                 {   textChannels.map((channel) => (
-                                        <SidebarChannel key={ channel.id } channel={ channel.channel } id={ channel.id } textChannel="true" />
+                                        <TextChannel key={ channel.id } channel={ channel.channel } id={ channel.id } />
                                     ))
                                 }
                             </motion.div> 
@@ -171,7 +182,7 @@ function Sidebar() {
                         { showVoiceChannels && <motion.div initial="hidden" exit="exit" 
                             animate="visible"  variants={ channelVariants } className="sidebar__channelsList">
                                 {   voiceChannels.map((channel) => (
-                                        <SidebarChannel key={ channel.id } channel={ channel.channel } id={ channel.id } setVoiceConnected = { setVoiceConnected } user = { user } />
+                                        <VoiceChannel stream = { stream } setStream = { setStream } key={ channel.id } channel={ channel.channel } id={ channel.id } setVoiceConnected = { setVoiceConnected } user = { user } />
                                     )) 
                                 }   
                             </motion.div>  
