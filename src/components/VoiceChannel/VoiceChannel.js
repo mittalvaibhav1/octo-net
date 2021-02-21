@@ -1,22 +1,112 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { setVoiceChannelInfo } from '../../features/appSlice';
 import db from '../../firebase/firebase';
-import { getUserAudio } from '../../WebRTC/utils'
+import { createSenderPeer, getUserAudio, createResponsePeer } from '../../WebRTC/utils'
 import './VoiceChannel.css';
 
-function VoiceChannel({ id, channel, setVoiceConnected = null, user = null, stream = null, setStream = null }) {
+function VoiceChannel({ id, channel, setVoiceConnected, user, stream, setStream }) {
 
     const dispatch = useDispatch();
+    let peers = [];
+    let offers = [];
+    let userId = null;
+    let k = 0;
+    let answers = [];
     
     const connectToChannel = async () => {
+
         await db.collection('voiceChannels').doc(id)
         .collection('users').add({
             user: user
-        })
-        .then((res) => {
-            console.log('res', res.id);
+        }).then((res) => {
+            userId = res.id;
         });
+
+        await db.collection('voiceChannels').doc(id)
+        .collection('users')
+        .where('user','!=', user)
+        .get().then((snapshot) => {
+            if(snapshot.docs.length !== 0) {
+                snapshot.docs.forEach((doc) => {
+                    const peer = createSenderPeer(stream);
+                    peer.onicecandidate = (e) => {
+                        console.log("Creating offer...");
+                        if(e.currentTarget.iceGatheringState === 'complete') {
+                            offers.push({
+                                for: doc.data().user,
+                                offer: {type: "offer", sdp: e.currentTarget.localDescription.sdp},
+                            });
+                            db.collection('voiceChannels').doc(id)
+                            .collection('users').doc(userId).update({
+                                offers: offers
+                            });
+                            console.log("Offer sent");
+                        }
+                    }
+                    peer.createOffer().then(offer => {
+                        peer.setLocalDescription(offer);
+                    })
+                    peers.push(peer);
+                });
+
+
+            }
+            else {
+                console.log("I AM THE ONLY ONE HERE");
+            }
+        });
+
+        db.collection('voiceChannels').doc(id)
+        .collection('users')
+        .where('user','!=', user)
+        .onSnapshot((snapshot) => {
+            snapshot.docChanges().forEach((change) => {
+                if(change.type === 'modified') {
+                    const doc = change.doc.data();
+                    if(doc.answers) {
+                        const currAnswers = doc.answers;
+                        currAnswers.forEach((currAnswer) => {
+                            if(currAnswer.for.uid === user.uid && k < peers.length) {
+                                console.log("Got an answer...");
+                                console.log(peers);
+                                peers[k++].setRemoteDescription(currAnswer.answer);
+                            }
+                        })
+                    }
+                    else if(doc.offers) {
+                        const currOffers = doc.offers;
+                        currOffers.forEach((currOffer) => {
+                            if(currOffer.for.uid === user.uid) {
+                                const responsePeer = createResponsePeer(stream);
+                                responsePeer.setRemoteDescription(currOffer.offer)
+                                responsePeer.onicecandidate = (e) => {
+                                    console.log("Creating answer...");
+                                    if(e.currentTarget.iceGatheringState === 'complete') {
+                                        answers.push({
+                                            for: doc.user,
+                                            answer: {type: "answer", sdp: e.currentTarget.localDescription.sdp},
+                                        });
+                                        db.collection('voiceChannels').doc(id)
+                                        .collection('users').doc(userId).update({
+                                            offers: offers,
+                                            answers: answers
+                                        });
+                                        console.log("Ansnswer sent!!");
+                                    }
+                                }
+                                responsePeer.createAnswer().then((answer) => {
+                                    responsePeer.setLocalDescription(answer);
+                                });
+                                peers.push(responsePeer);
+                            }
+                        })
+                        
+                    }
+                }
+            })
+        })
+
         setVoiceConnected([
             channel.channelName
         ]);
@@ -27,8 +117,14 @@ function VoiceChannel({ id, channel, setVoiceConnected = null, user = null, stre
     }
 
     useEffect(() => {
-        getUserAudio();
-    })
+        getUserAudio()
+        .then((stream) => {
+            setStream(stream);
+        })
+        .catch((err) => {
+            console.log(err.message);
+        })
+    },[])
 
     return (
         <div key={id} onClick= { connectToChannel } className="voiceChannel">
