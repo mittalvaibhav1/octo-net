@@ -5,17 +5,21 @@ import db from '../../firebase/firebase';
 import { createSenderPeer, getUserAudio, createResponsePeer } from '../../WebRTC/utils'
 import './VoiceChannel.css';
 
-function VoiceChannel({ id, channel, setVoiceConnected, user, stream, setStream }) {
+function VoiceChannel({ id, channel, voiceConnected, setVoiceConnected, user, stream, setStream }) {
 
     const dispatch = useDispatch();
     let peers = [];
+    let responsePeers = [];
     let offers = [];
+    let answers = [];
     let userId = null;
     let k = 0;
-    let answers = [];
     
     const connectToChannel = async () => {
-
+        if(voiceConnected) {
+            console.log("Please Disconnect from current channel!!");
+            return;
+        }
         await db.collection('voiceChannels').doc(id)
         .collection('users').add({
             user: user
@@ -98,7 +102,7 @@ function VoiceChannel({ id, channel, setVoiceConnected, user, stream, setStream 
                                 responsePeer.createAnswer().then((answer) => {
                                     responsePeer.setLocalDescription(answer);
                                 });
-                                peers.push(responsePeer);
+                                responsePeers.push(responsePeer);
                             }
                         })
                         

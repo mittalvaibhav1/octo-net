@@ -183,7 +183,7 @@ function Sidebar() {
                         { showVoiceChannels && <motion.div initial="hidden" exit="exit" 
                             animate="visible"  variants={ channelVariants } className="sidebar__channelsList">
                                 {   voiceChannels.map((channel) => (
-                                        <VoiceChannel stream = { stream } setStream = { setStream } key={ channel.id } channel={ channel.channel } id={ channel.id } setVoiceConnected = { setVoiceConnected } user = { user } />
+                                        <VoiceChannel stream = { stream } setStream = { setStream } key={ channel.id } channel={ channel.channel } id={ channel.id } setVoiceConnected = { setVoiceConnected } user = { user } voiceConnected = { voiceConnected } />
                                     )) 
                                 }   
                             </motion.div>  
