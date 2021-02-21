@@ -68,6 +68,7 @@ function Sidebar() {
         setMicStatus(toggleVal);
         if(micStatus && stream) {
             stream.getAudioTracks()[0].enabled = true;
+
             console.log(stream.getAudioTracks()[0], toggleVal);
         }
         else if(stream) {
