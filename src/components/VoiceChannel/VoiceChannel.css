@@ -1,0 +1,19 @@
+.voiceChannel:hover > h4 {
+    color: white;
+    background-color: #0d11174b;
+}
+
+.voiceChannel > h4 {
+    display: flex;
+    padding-left: 25px;
+    align-items: center;
+    cursor: pointer;
+    color: #c9d1d9d2;
+    text-align: center;
+}
+
+.voiceChannel__hash > svg {
+    padding: 8px;
+    padding-top: 12px;
+}
+

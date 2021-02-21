@@ -1,10 +1,11 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { useDispatch } from 'react-redux';
 import { setChannelInfo, setVoiceChannelInfo } from '../../features/appSlice';
 import './SidebarChannel.css';
 import db  from '../../firebase/firebase';
+import { Peer } from 'simple-peer';
 
-function SidebarChannel({ id, channel, textChannel = false, setVoiceConnected = null, user = null }) {
+function SidebarChannel({ id, channel, textChannel = false, setVoiceConnected = null, user = null, stream = null, setStream = null }) {
 
     const dispatch = useDispatch();
 
@@ -12,7 +13,8 @@ function SidebarChannel({ id, channel, textChannel = false, setVoiceConnected = 
         await db.collection('voiceChannels').doc(id)
         .collection('users').add({
             user: user
-        })
+        });
+        callAllPeers();
         setVoiceConnected([
             channel.channelName
         ]);
@@ -22,12 +24,67 @@ function SidebarChannel({ id, channel, textChannel = false, setVoiceConnected = 
         }));
     }
 
+    const callAllPeers = () => {
+        db.collection('voiceChannels').doc(id)
+        .collection('users')
+        .where('user','!=', user)
+        .onSnapshot((snapshot) => {
+            snapshot.docs.forEach((doc) => {
+                const data = doc.data();
+                callPeer(data.uid);
+
+            })
+        })
+    }
+
+    const callPeer = (id) => {
+        const peer = new Peer({
+            initiator: true,
+            trickle: false,
+            stream: stream
+        });
+
+        peer.on("signal", async (data) => {
+            await db.collection('voiceChannels').doc(id)
+            .collection('notifs').add({
+                userToCall: id,
+                signalData: data,
+                from: user.uid
+            });
+        });
+
+        peer.on("stream", stream => {
+            const audio = new Audio();
+            audio.srcObject = stream;
+            audio.play();
+        })
+
+        db.collection('voiceChannels').doc(id)
+        .collection('notifs').onSnapshot((snapshot) => {
+            snapshot.docChanges.forEach(change => {
+                const doc = change.doc;
+                if(change.type === 'added') {
+                    doc.data()
+                }
+            });
+        })
+    }
+
     const setTextChannel = () => {
         dispatch(setChannelInfo({
             channelId: id,
             channelName: channel.channelName
         }));
     }
+
+    useEffect(() => {
+        // const audio = new Audio();
+        navigator.mediaDevices.getUserMedia({ audio: true }).then(userStream => {
+            {setStream && setStream(userStream);}
+            // audio.srcObject = userStream;
+            // audio.play();
+        })
+    })
 
     return (
         <div key={id} onClick= { setVoiceConnected ? connectToChannel : setTextChannel } className="sidebarChannel">
