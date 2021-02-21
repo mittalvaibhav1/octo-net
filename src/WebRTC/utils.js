@@ -17,7 +17,6 @@ export function createSenderPeer(stream) {
                 ],
             },
         ],
-        iceCandidatePoolSize: 10,
     }; 
     const peer = new RTCPeerConnection(configuration);
     peer.addStream(stream);
@@ -41,7 +40,6 @@ export function createResponsePeer(stream) {
                 ],
             },
         ],
-        iceCandidatePoolSize: 10,
     }; 
     const peer = new RTCPeerConnection(configuration);
     peer.addStream(stream);
