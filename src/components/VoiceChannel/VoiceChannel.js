@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { setVoiceChannelInfo } from '../../features/appSlice';
 import db from '../../firebase/firebase';
+import { getUserAudio } from '../../WebRTC/utils'
 import './VoiceChannel.css';
 
 function VoiceChannel({ id, channel, setVoiceConnected = null, user = null, stream = null, setStream = null }) {
@@ -12,6 +13,9 @@ function VoiceChannel({ id, channel, setVoiceConnected = null, user = null, stre
         await db.collection('voiceChannels').doc(id)
         .collection('users').add({
             user: user
+        })
+        .then((res) => {
+            console.log('res', res.id);
         });
         setVoiceConnected([
             channel.channelName
@@ -21,6 +25,10 @@ function VoiceChannel({ id, channel, setVoiceConnected = null, user = null, stre
             channelName: channel.channelName
         }));
     }
+
+    useEffect(() => {
+        getUserAudio();
+    })
 
     return (
         <div key={id} onClick= { connectToChannel } className="voiceChannel">
