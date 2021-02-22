@@ -1,3 +1,5 @@
+import { setPeerVideos } from "../features/appSlice";
+
 export async function getUserAudio() {
     const stream = await navigator.mediaDevices.getUserMedia({
         audio: true
@@ -5,7 +7,15 @@ export async function getUserAudio() {
     return stream;
 }
 
-export function createSenderPeer(stream) {
+export async function getUserAudioAndVideo() {
+    const stream = await navigator.mediaDevices.getUserMedia({
+        audio: true,
+        video: true
+    });
+    return stream;
+}
+
+export function createSenderPeer(stream,dispatch, peerVideos) {
     const configuration = {
         iceServers: [
             {
@@ -23,12 +33,15 @@ export function createSenderPeer(stream) {
         console.log("Got a stream from the callie when i was the caller",e.stream);
         const audio = new Audio();
         audio.srcObject = e.stream;
+        dispatch && dispatch(setPeerVideos({
+            peerVideos: [...peerVideos, e.stream]
+        }))
         audio.play();
     }
     return peer;
 }
 
-export function createResponsePeer(stream) {
+export function createResponsePeer(stream, dispatch, peerVideos) {
     const configuration = {
         iceServers: [
             {
@@ -45,6 +58,9 @@ export function createResponsePeer(stream) {
     peer.onaddstream = (e) => {
         console.log("Got a stream from the caller where i was the callie", e.stream);
         const audio = new Audio();
+        dispatch && dispatch(setPeerVideos({
+            peerVideos: [...peerVideos, e.stream]
+        }))
         audio.srcObject = e.stream;
         audio.play();
     }
