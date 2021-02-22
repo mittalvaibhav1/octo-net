@@ -11,7 +11,9 @@ import { selectChannelId, selectChannelName } from '../../features/appSlice';
 import { selectUser } from '../../features/userSlice';
 import db from '../../firebase/firebase';
 import firebase from 'firebase/app';
-import notificationSound from '../../sounds/micSound.mp3'
+import notificationSound from '../../sounds/micSound.mp3';
+import GiphySearchbox from 'react-giphy-searchbox';
+import EmojiPicker from 'emoji-picker-react';
 
 function Chat() {
 
@@ -20,7 +22,25 @@ function Chat() {
     const user = useSelector(selectUser);
     const [input, setInput] = useState("");
     const [messages, setMessages] = useState([]);
+    const [showGifs, setShowGifs] = useState(false);
+    const [showEmojis, setShowEmojis] = useState(false);
     const notificationAudio = new Audio(notificationSound);
+
+    const gifSelectHandler  = (item) => {
+        console.log(item);
+        notificationAudio.play(); 
+        db.collection('textChannels').doc(channelId)
+        .collection("messages").add({
+            timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+            user: user,
+            gif: item.images.downsized_medium.url
+        });
+        setShowGifs(false);
+    }
+
+    const emojiSelectHandler = (e, emoji) => {
+        setInput((input) => input += emoji.emoji);
+    }
 
     const handleSubmit = (e) => {
         e.preventDefault();
@@ -32,6 +52,8 @@ function Chat() {
             message: input
         });
         setInput("");
+        setShowGifs(false);
+        setShowEmojis(false);
     }
 
     useEffect(() => {
@@ -59,10 +81,17 @@ function Chat() {
                             timestamp = { message.timestamp }
                             message = { message.message }
                             user = { message.user }
+                            gifUrl = { message.gif }
                         />
                     )) 
                 }
             </div>
+            {
+                showGifs && <GiphySearchbox apiKey="iw2kiJqAufz5tY2qZ9NDZ9P2C2wY8C6W" onSelect={ gifSelectHandler }/>
+            }
+            {
+                showEmojis && <EmojiPicker onEmojiClick={ emojiSelectHandler } />
+            }
             <div className="chat__input">
                 <AddCircleIcon fontSize="large" />
                 <form onSubmit={ handleSubmit } >
@@ -71,8 +100,8 @@ function Chat() {
                 </form>
                 <div className="chat__inputIcons">
                     <CardGiftcardIcon fontSize="large" />
-                    <GifIcon fontSize="large" />
-                    <EmojiEmotionsIcon fontSize="large" />
+                    <GifIcon onClick = { () => { setShowEmojis(false); setShowGifs(!showGifs)} } fontSize="large" />
+                    <EmojiEmotionsIcon onClick = { () => { setShowGifs(false); setShowEmojis(!showEmojis)} } fontSize="large" />
                 </div>
             </div>
         </div>
