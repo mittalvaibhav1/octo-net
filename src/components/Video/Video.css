@@ -1,0 +1,17 @@
+.video {
+    flex: 1;
+    flex-grow: 1;
+    flex-basis: 400px;
+    height: 400px;
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.video > video {
+    flex-basis: 100%;
+    flex: 1;
+    height: inherit;
+    width: 100% !important;
+    object-fit:contain; 
+}
