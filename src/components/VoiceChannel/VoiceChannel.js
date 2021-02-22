@@ -3,31 +3,37 @@ import { useDispatch } from 'react-redux';
 import { setVoiceChannelInfo } from '../../features/appSlice';
 import db from '../../firebase/firebase';
 import { createSenderPeer, getUserAudio, createResponsePeer } from '../../WebRTC/utils'
+import ConnectedUser from '../ConnectedUser/ConnectedUser';
 import './VoiceChannel.css';
 
-function VoiceChannel({ id, channel, voiceConnected, setVoiceConnected, user, stream, setStream }) {
-
+function VoiceChannel({ id: docID, channel, voiceConnected, setVoiceConnected, user, stream, setStream, setPeers }) {
+ 
     const dispatch = useDispatch();
     let peers = [];
     let responsePeers = [];
     let offers = [];
     let answers = [];
-    let userId = null;
+    let userDocID = null;
     let k = 0;
-    
+    const [connectedUsers, setConnectedUsers] = useState([]);
     const connectToChannel = async () => {
+        console.log("Function Called connect to channel");
         if(voiceConnected) {
             console.log("Please Disconnect from current channel!!");
             return;
         }
-        await db.collection('voiceChannels').doc(id)
+        setVoiceConnected([
+            channel.channelName
+        ]);
+        await db.collection('voiceChannels').doc(docID)
         .collection('users').add({
             user: user
         }).then((res) => {
-            userId = res.id;
+            userDocID = String(res.id);
+            console.log("current user ki docid is", userDocID);
         });
 
-        await db.collection('voiceChannels').doc(id)
+        await db.collection('voiceChannels').doc(docID)
         .collection('users')
         .where('user','!=', user)
         .get().then((snapshot) => {
@@ -41,10 +47,16 @@ function VoiceChannel({ id, channel, voiceConnected, setVoiceConnected, user, st
                                 for: doc.data().user,
                                 offer: {type: "offer", sdp: e.currentTarget.localDescription.sdp},
                             });
-                            db.collection('voiceChannels').doc(id)
-                            .collection('users').doc(userId).update({
-                                offers: offers
-                            });
+                            try {
+                                console.log("current user ki docid is offer", userDocID);
+                                db.collection('voiceChannels').doc(docID)
+                                .collection('users').doc(userDocID).update({
+                                    offers: offers
+                                })
+                            }
+                            catch(err) {
+                                console.log("Error when creating offer", err.message)
+                            } 
                             console.log("Offer sent");
                         }
                     }
@@ -52,6 +64,7 @@ function VoiceChannel({ id, channel, voiceConnected, setVoiceConnected, user, st
                         peer.setLocalDescription(offer);
                     })
                     peers.push(peer);
+                    setPeers([...peers,...responsePeers]);
                 });
 
 
@@ -61,7 +74,7 @@ function VoiceChannel({ id, channel, voiceConnected, setVoiceConnected, user, st
             }
         });
 
-        db.collection('voiceChannels').doc(id)
+        db.collection('voiceChannels').doc(docID)
         .collection('users')
         .where('user','!=', user)
         .onSnapshot((snapshot) => {
@@ -84,18 +97,23 @@ function VoiceChannel({ id, channel, voiceConnected, setVoiceConnected, user, st
                             if(currOffer.for.uid === user.uid) {
                                 const responsePeer = createResponsePeer(stream);
                                 responsePeer.setRemoteDescription(currOffer.offer)
-                                responsePeer.onicecandidate = (e) => {
+                                responsePeer.onicecandidate = async (e) => {
                                     console.log("Creating answer...");
                                     if(e.currentTarget.iceGatheringState === 'complete') {
                                         answers.push({
                                             for: doc.user,
                                             answer: {type: "answer", sdp: e.currentTarget.localDescription.sdp},
                                         });
-                                        db.collection('voiceChannels').doc(id)
-                                        .collection('users').doc(userId).update({
-                                            offers: offers,
-                                            answers: answers
-                                        });
+                                        try {
+                                            console.log("current user ki docid is answer", userDocID);
+                                            await db.collection('voiceChannels').doc(docID)
+                                            .collection('users').doc(userDocID).update({
+                                                answers: answers
+                                            })
+                                        }
+                                        catch(err) {
+                                            console.log("Error when creating answer", err.message)
+                                        }
                                         console.log("Ansnswer sent!!");
                                     }
                                 }
@@ -103,6 +121,7 @@ function VoiceChannel({ id, channel, voiceConnected, setVoiceConnected, user, st
                                     responsePeer.setLocalDescription(answer);
                                 });
                                 responsePeers.push(responsePeer);
+                                setPeers([...peers,...responsePeers]);
                             }
                         })
                         
@@ -110,12 +129,8 @@ function VoiceChannel({ id, channel, voiceConnected, setVoiceConnected, user, st
                 }
             })
         })
-
-        setVoiceConnected([
-            channel.channelName
-        ]);
         dispatch(setVoiceChannelInfo({
-            channelId: id,
+            channelId: docID,
             channelName: channel.channelName
         }));
     }
@@ -128,10 +143,23 @@ function VoiceChannel({ id, channel, voiceConnected, setVoiceConnected, user, st
         .catch((err) => {
             console.log(err.message);
         })
-    },[])
+    },[setStream]);
+
+    useEffect(() => {
+        db.collection('voiceChannels').doc(docID)
+        .collection('users')
+        .onSnapshot((snapshot) => {
+            setConnectedUsers(() => [])
+            setConnectedUsers(snapshot.docs.map((doc) => {
+                const data = doc.data();
+                const { user: currUser } = data;
+                return currUser;
+            }))
+        })
+    }, [setConnectedUsers, docID])
 
     return (
-        <div key={id} onClick= { connectToChannel } className="voiceChannel">
+        <div key={docID} onClick= { connectToChannel } className="voiceChannel">
             <h4>
                 <span className="voiceChannel__hash">
                     <svg width="24" height="24" viewBox="0 0 24 24">
@@ -141,6 +169,11 @@ function VoiceChannel({ id, channel, voiceConnected, setVoiceConnected, user, st
                 </span>
                 <span>{ channel.channelName }</span>
             </h4>
+            {
+                connectedUsers.map((user, idx) => (
+                    <ConnectedUser key={ idx } user={ user } />
+                ))
+            }
         </div>
     )
 }

@@ -4,6 +4,7 @@ export async function getUserAudio() {
     const stream = await navigator.mediaDevices.getUserMedia({
         audio: true
     });
+    // stream.getAudioTracks()[0].
     return stream;
 }
 
