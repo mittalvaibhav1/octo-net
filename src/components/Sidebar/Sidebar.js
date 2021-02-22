@@ -66,28 +66,19 @@ function Sidebar() {
         setShowVoiceChannels(!showVoiceChannels);
     }
     const toggleMicStatus = () => {
-        const toggleVal = !micStatus;
-        setMicStatus(toggleVal);
-        if(micStatus && stream) {
-            stream.getAudioTracks()[0].enabled = true;
-
-            console.log(stream.getAudioTracks()[0], toggleVal);
-        }
-        else if(stream) {
-            stream.getAudioTracks()[0].enabled = false;
-            console.log(stream.getAudioTracks()[0],  toggleVal);
-        }
+        setMicStatus((old) => !old);
+        stream.getTracks().forEach(track => track.enabled = !track.enabled);
     }
     const disconnectVoiceChannel = async () => {
-        peers.forEach((peer) => {
-            peer.close();
-        })
         await db.collection('voiceChannels').doc(voiceChannelId).collection('users')
         .where('user','==', user).get()
         .then((snapshot) => {
             snapshot.docs.forEach(async (doc) => {
                 await  db.collection('voiceChannels').doc(voiceChannelId).collection('users').doc(doc.id).delete()
             })
+        });
+        peers.forEach((peer) => {
+            peer.close();
         })
         setVoiceConnected(null);
     }
