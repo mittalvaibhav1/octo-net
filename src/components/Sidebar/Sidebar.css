@@ -123,6 +123,14 @@
     color: #c9d1d9d2;
 }
 
+.sidebar__videoOn:hover{
+    color: white;
+}
+
+.sidebar__videoOff {
+    color: tomato !important;
+}
+
 .sidebar__micOff  {
     color: tomato !important;
 }
