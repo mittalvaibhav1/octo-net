@@ -16,7 +16,7 @@ function Message({ user, message, timestamp, gifUrl }) {
                 </h4>
                 { 
                     message ? <p>{ message }</p> :
-                    <img src={gifUrl} />
+                    <img src={gifUrl} alt="gif" />
                 }
             </div>
         </div>
