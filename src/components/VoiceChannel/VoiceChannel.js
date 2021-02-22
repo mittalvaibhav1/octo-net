@@ -13,25 +13,26 @@ function VoiceChannel({ id: docID, channel, voiceConnected, setVoiceConnected, u
     let responsePeers = [];
     let offers = [];
     let answers = [];
-    let userDocID = null;
     let k = 0;
     const [connectedUsers, setConnectedUsers] = useState([]);
     const connectToChannel = async () => {
-        console.log("Function Called connect to channel");
+
         if(voiceConnected) {
             console.log("Please Disconnect from current channel!!");
             return;
         }
+
         setVoiceConnected([
             channel.channelName
         ]);
+
+        let uid = user.uid;
+        window.uid = uid;
+        console.log(uid);
         await db.collection('voiceChannels').doc(docID)
-        .collection('users').add({
+        .collection('users').doc(uid).set({
             user: user
-        }).then((res) => {
-            userDocID = String(res.id);
-            console.log("current user ki docid is", userDocID);
-        });
+        })
 
         await db.collection('voiceChannels').doc(docID)
         .collection('users')
@@ -48,16 +49,16 @@ function VoiceChannel({ id: docID, channel, voiceConnected, setVoiceConnected, u
                                 offer: {type: "offer", sdp: e.currentTarget.localDescription.sdp},
                             });
                             try {
-                                console.log("current user ki docid is offer", userDocID);
                                 db.collection('voiceChannels').doc(docID)
-                                .collection('users').doc(userDocID).update({
+                                .collection('users').doc(uid).update({
                                     offers: offers
                                 })
+                                console.log("Offer sent to", doc.data().user.displayName);
                             }
                             catch(err) {
-                                console.log("Error when creating offer", err.message)
+                                console.log("Error when creating offer for ",doc.data().user.displayName , err.message);
+                                console.log("Offer not sent");
                             } 
-                            console.log("Offer sent");
                         }
                     }
                     peer.createOffer().then(offer => {
@@ -85,7 +86,7 @@ function VoiceChannel({ id: docID, channel, voiceConnected, setVoiceConnected, u
                         const currAnswers = doc.answers;
                         currAnswers.forEach((currAnswer) => {
                             if(currAnswer.for.uid === user.uid && k < peers.length) {
-                                console.log("Got an answer...");
+                                console.log("Got an answer from ...", doc.user.displayName);
                                 console.log(peers);
                                 peers[k++].setRemoteDescription(currAnswer.answer);
                             }
@@ -105,16 +106,18 @@ function VoiceChannel({ id: docID, channel, voiceConnected, setVoiceConnected, u
                                             answer: {type: "answer", sdp: e.currentTarget.localDescription.sdp},
                                         });
                                         try {
-                                            console.log("current user ki docid is answer", userDocID);
+                                            console.log("current user ki docid is answer", uid);
                                             await db.collection('voiceChannels').doc(docID)
-                                            .collection('users').doc(userDocID).update({
+                                            .collection('users').doc(uid).update({
                                                 answers: answers
                                             })
+                                            console.log("Ansnswer sent!! to", doc.user.displayName);
                                         }
                                         catch(err) {
-                                            console.log("Error when creating answer", err.message)
+                                            console.log("Error when creating answer for",doc.user.displayName , err.message)
+                                            console.log("Ansnswer not sent :(");
                                         }
-                                        console.log("Ansnswer sent!!");
+                                        
                                     }
                                 }
                                 responsePeer.createAnswer().then((answer) => {
