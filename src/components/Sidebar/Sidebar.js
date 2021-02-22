@@ -35,6 +35,8 @@ function Sidebar() {
     const isMounted = useRef(null);
     const voiceChannelId = useSelector(selectVoiceChannelId);
     const [stream, setStream] = useState(null);
+    const [peers, setPeers] = useState([]);
+ 
 
     const channelVariants = {
         hidden: {
@@ -77,6 +79,9 @@ function Sidebar() {
         }
     }
     const disconnectVoiceChannel = async () => {
+        peers.forEach((peer) => {
+            peer.close();
+        })
         await db.collection('voiceChannels').doc(voiceChannelId).collection('users')
         .where('user','==', user).get()
         .then((snapshot) => {
@@ -149,6 +154,12 @@ function Sidebar() {
         })
     }, []);
 
+    window.addEventListener('beforeunload', function(e) {
+        e.preventDefault();
+        disconnectVoiceChannel();
+        e.returnValue = '';
+    });
+
     return (
         <div className="sidebar">
             <div className="sidebar__top">
@@ -183,7 +194,7 @@ function Sidebar() {
                         { showVoiceChannels && <motion.div initial="hidden" exit="exit" 
                             animate="visible"  variants={ channelVariants } className="sidebar__channelsList">
                                 {   voiceChannels.map((channel) => (
-                                        <VoiceChannel stream = { stream } setStream = { setStream } key={ channel.id } channel={ channel.channel } id={ channel.id } setVoiceConnected = { setVoiceConnected } user = { user } voiceConnected = { voiceConnected } />
+                                        <VoiceChannel setPeers = {setPeers} stream = { stream } setStream = { setStream } key={ channel.id } channel={ channel.channel } id={ channel.id } setVoiceConnected = { setVoiceConnected } user = { user } voiceConnected = { voiceConnected } />
                                     )) 
                                 }   
                             </motion.div>  
