@@ -1,0 +1,15 @@
+.connecteduser {
+    display: flex;
+    align-items: center;
+    padding-bottom: 10px;
+    padding-left: 3em;
+}
+.connecteduser > span {
+    color: white;
+    padding-left: 0.5em;
+}
+.connecteduser__avatar {
+    height: auto !important;
+    width: 1em !important;
+    border: 3px solid #31EC8C;
+}
