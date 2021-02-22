@@ -2,6 +2,7 @@
     flex: 0.75;
     background: #0d1117;
     display: flex;
+    position: relative;
     flex-direction: column;
 }
 
@@ -24,6 +25,49 @@
 
 .chat__input  .MuiSvgIcon-root:hover {
     color: white;
+}
+
+.reactGiphySearchbox-componentWrapper, .emoji-picker-react {
+    position: absolute !important;
+    bottom:  5.5em;
+    right: 2em;
+}
+.emoji-picker-react {
+    box-shadow: none !important;
+}
+
+.emoji-picker-react {
+    background: #161B22 !important;
+    border-color: #161B22 !important;
+}
+
+.emoji-picker-react .emoji-group:before {
+    background: #161B22 !important;
+}
+
+.emoji-categories {
+    display: none !important;
+}
+
+.emoji-search {
+    margin-top: 10px;
+    background: #0C0D0F;
+    border: none !important;
+}
+.skin-tones-list {
+    margin-top: 10px  !important;
+}
+
+.reactGiphySearchbox-poweredByGiphy {
+    padding-top: 0px !important;
+}
+
+.reactGiphySearchbox-poweredByGiphy > svg {
+    height: 7px;
+}
+
+.reactGiphySearchbox-listWrapper {
+    background: black !important;
 }
 
 .chat__input > form > input {
