@@ -1,7 +1,7 @@
 .message {
     display: flex;
     align-items: center;
-    padding: 20px;
+    padding: 17px 20px;
     color: white;
 }
 
@@ -18,4 +18,10 @@
     color: rgba(128, 128, 128, 0.452);
     margin-left: 20px;
     font-size: x-small;
+}
+
+.message__info  > img {
+    margin-top: 10px;
+    border-radius: 10px;
+    width: 70%;
 }

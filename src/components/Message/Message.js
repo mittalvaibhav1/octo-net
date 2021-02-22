@@ -1,9 +1,9 @@
 import { Avatar } from '@material-ui/core';
 import React from 'react';
 import './Message.css';
-import { formatRelative} from 'date-fns';
+import { formatRelative } from 'date-fns';
 
-function Message({ user, message, timestamp }) {
+function Message({ user, message, timestamp, gifUrl }) {
     return (
         <div className="message">
             <Avatar  src={ user.photo } />
@@ -14,7 +14,10 @@ function Message({ user, message, timestamp }) {
                         { timestamp && formatRelative(new Date(timestamp?.toDate()), new Date()) }
                     </span>
                 </h4>
-                <p>{ message }</p>
+                { 
+                    message ? <p>{ message }</p> :
+                    <img src={gifUrl} />
+                }
             </div>
         </div>
     )
