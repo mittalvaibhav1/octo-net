@@ -7,13 +7,14 @@ import GifIcon from '@material-ui/icons/Gif';
 import EmojiEmotionsIcon from '@material-ui/icons/EmojiEmotions';
 import Message from '../Message/Message';
 import { useSelector } from 'react-redux';
-import { selectChannelId, selectChannelName } from '../../features/appSlice';
+import { selectChannelId, selectChannelName, selectVideoChannelId } from '../../features/appSlice';
 import { selectUser } from '../../features/userSlice';
 import db from '../../firebase/firebase';
 import firebase from 'firebase/app';
 import notificationSound from '../../sounds/micSound.mp3';
 import GiphySearchbox from 'react-giphy-searchbox';
 import EmojiPicker from 'emoji-picker-react';
+import Videos from '../Videos/Videos';
 
 function Chat() {
 
@@ -25,6 +26,7 @@ function Chat() {
     const [showGifs, setShowGifs] = useState(false);
     const [showEmojis, setShowEmojis] = useState(false);
     const notificationAudio = new Audio(notificationSound);
+    const videoChannelId = useSelector(selectVideoChannelId);
 
     const gifSelectHandler  = (item) => {
         console.log(item);
@@ -73,7 +75,10 @@ function Chat() {
     return (
         <div className="chat">
             <ChatHeader channelName = { channelName } />
-            <div className="chat__messages">
+            {
+                videoChannelId && <Videos />
+            }
+            { !videoChannelId && <div className="chat__messages">
                 {
                     messages.map(({id, message}) => (
                         <Message 
@@ -85,7 +90,8 @@ function Chat() {
                         />
                     )) 
                 }
-            </div>
+                </div>
+            }
             {
                 showGifs && <GiphySearchbox apiKey="iw2kiJqAufz5tY2qZ9NDZ9P2C2wY8C6W" onSelect={ gifSelectHandler }/>
             }
