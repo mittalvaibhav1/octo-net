@@ -15,28 +15,36 @@ import disconnectSound  from '../../sounds/disconnectSound.mp3';
 import connectSound from '../../sounds/connectSound.mp3';
 import { AnimatePresence, motion } from 'framer-motion';
 import { selectUser } from '../../features/userSlice';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import db, { auth } from '../../firebase/firebase';
-import { selectVoiceChannelId } from '../../features/appSlice';
+import { selectVideoChannelId, selectVoiceChannelId, setPeerVideos, setVideoChannelInfo } from '../../features/appSlice';
 import TextChannel from '../TextChannel/TextChannel';
 import VoiceChannel from '../VoiceChannel/VoiceChannel';
+import VideoChannel from '../VideoChannels/VideoChannel';
+import VideocamIcon from '@material-ui/icons/Videocam';
+import VideocamOffIcon from '@material-ui/icons/VideocamOff';
 
 function Sidebar() {
 
     const [showTextChannels, setShowTextChannels] = useState(false);
     const [showVoiceChannels, setShowVoiceChannels] = useState(false);
+    const [showVideoChannels, setShowVideoChannels] = useState(false);
     const [micStatus, setMicStatus] = useState(true);
+    const [videoStatus, setVideoStatus] = useState(true);
     const [voiceConnected, setVoiceConnected] = useState(null);
+    const [videoConnected, setVideoConnected] = useState(null);
     const [textChannels, setTextChannels] = useState([]);
     const [voiceChannels, setVoiceChannels] = useState([]);
+    const [videoChannels, setVideoChannels] = useState([]);
     const user = useSelector(selectUser);
     const disconnectAudio = new Audio(disconnectSound);
     const connectAudio = new Audio(connectSound);
     const isMounted = useRef(null);
     const voiceChannelId = useSelector(selectVoiceChannelId);
+    const videoChannelId = useSelector(selectVideoChannelId);
     const [stream, setStream] = useState(null);
     const [peers, setPeers] = useState([]);
- 
+    const dispatch = useDispatch();
 
     const channelVariants = {
         hidden: {
@@ -65,11 +73,22 @@ function Sidebar() {
     const toggleVoiceChannels = () => {
         setShowVoiceChannels(!showVoiceChannels);
     }
+    const toggleVideoChannels = () => {
+        setShowVideoChannels(!showVideoChannels);
+    }
     const toggleMicStatus = () => {
         setMicStatus((old) => !old);
-        stream.getTracks().forEach(track => track.enabled = !track.enabled);
+        if(stream) stream.getAudioTracks().forEach(track => track.enabled = !track.enabled);
     }
+    const toggleVideoStatus = () => {
+        setVideoStatus((old) => !old);
+        if(stream) stream.getVideoTracks().forEach(track => track.enabled = !track.enabled);
+    }
+
     const disconnectVoiceChannel = async () => {
+        dispatch(setPeerVideos({
+            peerVideos: []
+        }));
         await db.collection('voiceChannels').doc(voiceChannelId).collection('users')
         .where('user','==', user).get()
         .then((snapshot) => {
@@ -81,6 +100,24 @@ function Sidebar() {
             peer.close();
         })
         setVoiceConnected(null);
+    }
+
+    const disconnectVideoChannel = async () => {
+        await db.collection('videoChannels').doc(videoChannelId).collection('users')
+        .where('user','==', user).get()
+        .then((snapshot) => {
+            snapshot.docs.forEach(async (doc) => {
+                await  db.collection('videoChannels').doc(videoChannelId).collection('users').doc(doc.id).delete()
+            })
+        });
+        peers.forEach((peer) => {
+            peer.close();
+        });
+        dispatch(setVideoChannelInfo({
+            channelId: null,
+            channelName: null
+        }));
+        setVideoConnected(null);
     }
 
     const handleAddTextChannel = () => {
@@ -101,6 +138,15 @@ function Sidebar() {
         }
     }
 
+    const handleAddVideoChannel = () => {
+        const channelName = prompt('Enter the new channel name');
+        if(channelName) {
+            db.collection('videoChannels').add({
+                channelName: channelName
+            });
+        }
+    }
+
     useEffect(() => {
         if(isMounted.current) {
             if(micStatus) {
@@ -114,7 +160,29 @@ function Sidebar() {
 
     useEffect(() => {
         if(isMounted.current) {
+            if(videoStatus) {
+                connectAudio.play();
+            }
+            else {
+                disconnectAudio.play();
+            }
+        }
+    }, [videoStatus]);
+
+    useEffect(() => {
+        if(isMounted.current) {
             if(voiceConnected) {
+                connectAudio.play();
+            }
+            else {
+                disconnectAudio.play();
+            }
+        }
+    }, [voiceConnected]);
+
+    useEffect(() => {
+        if(isMounted.current) {
+            if(videoConnected) {
                 connectAudio.play();
             }
             else {
@@ -124,7 +192,7 @@ function Sidebar() {
         else {
             isMounted.current = true;
         }
-    }, [voiceConnected]);
+    }, [videoConnected]);
 
     useEffect(() => {
         db.collection('textChannels').onSnapshot((snapshot) => {
@@ -137,6 +205,14 @@ function Sidebar() {
         })
         db.collection('voiceChannels').onSnapshot((snapshot) => {
             setVoiceChannels(snapshot.docs.map((doc) => {
+                return {
+                    id: doc.id,
+                    channel: doc.data(),
+                }
+            }))
+        })
+        db.collection('videoChannels').onSnapshot((snapshot) => {
+            setVideoChannels(snapshot.docs.map((doc) => {
                 return {
                     id: doc.id,
                     channel: doc.data(),
@@ -185,7 +261,24 @@ function Sidebar() {
                         { showVoiceChannels && <motion.div initial="hidden" exit="exit" 
                             animate="visible"  variants={ channelVariants } className="sidebar__channelsList">
                                 {   voiceChannels.map((channel) => (
-                                        <VoiceChannel setPeers = {setPeers} stream = { stream } setStream = { setStream } key={ channel.id } channel={ channel.channel } id={ channel.id } setVoiceConnected = { setVoiceConnected } user = { user } voiceConnected = { voiceConnected } />
+                                        <VoiceChannel setPeers = {setPeers} stream = { stream } setStream = { setStream } key={ channel.id } channel={ channel.channel } id={ channel.id } setVoiceConnected = { setVoiceConnected } user = { user } videoConnected = { videoConnected } voiceConnected = { voiceConnected } />
+                                    )) 
+                                }   
+                            </motion.div>  
+                        }
+                    </AnimatePresence>
+                </div>
+                <div className="sidebar__videoChannels">
+                    <div  className="sidebar__channelsHeader">
+                        { showVideoChannels ? <ExpandMoreIcon  onClick = { toggleVideoChannels } className="sidebar__icon" /> : <ChevronRightIcon onClick = { toggleVideoChannels } className="sidebar__icon" /> }
+                        <h4 onClick = { toggleVideoChannels } >Video Channels</h4>
+                        <AddIcon onClick={ handleAddVideoChannel } className="sidebar__icon" />
+                    </div>
+                    <AnimatePresence exitBeforeEnter>
+                        { showVideoChannels && <motion.div initial="hidden" exit="exit" 
+                            animate="visible"  variants={ channelVariants } className="sidebar__channelsList">
+                                {   videoChannels.map((channel) => (
+                                        <VideoChannel setPeers = {setPeers} stream = { stream } setStream = { setStream } key={ channel.id } channel={ channel.channel } id={ channel.id } user = { user } setVideoConnected = { setVideoConnected }  videoConnected = { videoConnected } voiceConnected = { voiceConnected }/>
                                     )) 
                                 }   
                             </motion.div>  
@@ -205,6 +298,20 @@ function Sidebar() {
                         </div>
                 </div> 
             }
+
+            { videoConnected && <div className="sidebar__voice">
+                        <SignalCellularAltIcon  className="sidebar__voiceIcon" fontSize="large"/>
+                        <div className="sidebar__voiceInfo">
+                            <h3>Video Connected</h3>
+                            <p>{ videoConnected[0] } / XTC</p>
+                        </div>
+                        <div className="sidebar__voiceIcons">
+                            {videoStatus ? <VideocamIcon  onClick={ toggleVideoStatus }  className="sidebar__videoOn" /> : <VideocamOffIcon onClick={ toggleVideoStatus } className="sidebar__videoOff" /> }
+                            <CallIcon onClick = { disconnectVideoChannel } className="sidebar__voiceDisconnect" />
+                        </div>
+                </div> 
+            }
+
             <div className="sidebar__profile">
                 <Avatar onClick = { () => auth.signOut() } src={ user.photo } className="sidebar__avatar" />
                 <div className="sidebar__profileInfo">
