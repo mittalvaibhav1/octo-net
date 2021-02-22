@@ -6,7 +6,7 @@ import { createSenderPeer, getUserAudio, createResponsePeer } from '../../WebRTC
 import ConnectedUser from '../ConnectedUser/ConnectedUser';
 import './VoiceChannel.css';
 
-function VoiceChannel({ id: docID, channel, voiceConnected, setVoiceConnected, user, stream, setStream, setPeers }) {
+function VoiceChannel({ id: docID, channel, videoConnected, voiceConnected, setVoiceConnected, user, stream, setStream, setPeers }) {
  
     const dispatch = useDispatch();
     let peers = [];
@@ -17,7 +17,7 @@ function VoiceChannel({ id: docID, channel, voiceConnected, setVoiceConnected, u
     const [connectedUsers, setConnectedUsers] = useState([]);
     const connectToChannel = async () => {
 
-        if(voiceConnected) {
+        if(voiceConnected || videoConnected) {
             console.log("Please Disconnect from current channel!!");
             return;
         }
