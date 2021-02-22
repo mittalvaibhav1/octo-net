@@ -10,7 +10,7 @@ import { useSelector } from 'react-redux';
 import { selectChannelId, selectChannelName } from '../../features/appSlice';
 import { selectUser } from '../../features/userSlice';
 import db from '../../firebase/firebase';
-import firebase from 'firebase';
+import firebase from 'firebase/app';
 import notificationSound from '../../sounds/micSound.mp3'
 
 function Chat() {
