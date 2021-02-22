@@ -1,0 +1,8 @@
+.videos {
+    height: 73.8vh;
+    overflow-y: auto;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-around;
+}
