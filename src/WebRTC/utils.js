@@ -1,10 +1,7 @@
-
-
 export async function getUserAudio() {
     const stream = await navigator.mediaDevices.getUserMedia({
         audio: true
     });
-    // stream.getAudioTracks()[0].
     return stream;
 }
 
@@ -21,9 +18,9 @@ export function createSenderPeer(stream) {
     }; 
     const peer = new RTCPeerConnection(configuration);
     peer.addStream(stream);
-    peer.onconnectionstatechange = (e) => console.log("sender",e.currentTarget.connectionState);
+    peer.onconnectionstatechange = (e) => console.log("Caller...",e.currentTarget.connectionState);
     peer.onaddstream = (e) => {
-        console.log("sender peer ki",e.stream);
+        console.log("Got a stream from the callie when i was the caller",e.stream);
         const audio = new Audio();
         audio.srcObject = e.stream;
         audio.play();
@@ -44,10 +41,9 @@ export function createResponsePeer(stream) {
     }; 
     const peer = new RTCPeerConnection(configuration);
     peer.addStream(stream);
-    console.log("RESPONSEEEEEE",peer);
-    peer.onconnectionstatechange = (e) => console.log("receiver", e.currentTarget.connectionState);
+    peer.onconnectionstatechange = (e) => console.log("Callie...", e.currentTarget.connectionState);
     peer.onaddstream = (e) => {
-        console.log("respose peer ki",e.stream);
+        console.log("Got a stream from the caller where i was the callie", e.stream);
         const audio = new Audio();
         audio.srcObject = e.stream;
         audio.play();
