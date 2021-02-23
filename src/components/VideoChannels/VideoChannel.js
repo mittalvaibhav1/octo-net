@@ -41,6 +41,7 @@ function VideoChannel({ id: docID, channel, voiceConnected, videoConnected, setV
         .where('user','!=', user)
         .get().then((snapshot) => {
             if(snapshot.docs.length !== 0) {
+                let count = snapshot.docs.length;
                 snapshot.docs.forEach((doc) => {
                     const peer = createSenderPeer(stream, dispatch, peerVideos);
                     peer.onicecandidate = (e) => {
@@ -50,17 +51,20 @@ function VideoChannel({ id: docID, channel, voiceConnected, videoConnected, setV
                                 for: doc.data().user,
                                 offer: {type: "offer", sdp: e.currentTarget.localDescription.sdp},
                             });
-                            try {
-                                db.collection('videoChannels').doc(docID)
-                                .collection('users').doc(uid).update({
-                                    offers: offers
-                                })
-                                console.log("Offer sent to", doc.data().user.displayName);
+                            count--;
+                            if(count == 0) {
+                                try {
+                                    db.collection('videoChannels').doc(docID)
+                                    .collection('users').doc(uid).update({
+                                        offers: offers
+                                    })
+                                    console.log("Offer sent to", doc.data().user.displayName);
+                                }
+                                catch(err) {
+                                    console.log("Error when creating offer for ",doc.data().user.displayName , err.message);
+                                    console.log("Offer not sent");
+                                } 
                             }
-                            catch(err) {
-                                console.log("Error when creating offer for ",doc.data().user.displayName , err.message);
-                                console.log("Offer not sent");
-                            } 
                         }
                     }
                     peer.createOffer().then(offer => {
