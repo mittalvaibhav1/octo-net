@@ -3,13 +3,13 @@ import "firebase/auth";
 import "firebase/firestore";
 
 const firebaseConfig = {
-    apiKey: "AIzaSyDelYlXtAnaMgsuMi4yWTliFzzfIBOug0A",
-    authDomain: "discord-clone-18569.firebaseapp.com",
-    projectId: "discord-clone-18569",
-    storageBucket: "discord-clone-18569.appspot.com",
-    messagingSenderId: "818123000289",
-    appId: "1:818123000289:web:a80946239771143152eaa0",
-    measurementId: "G-7P1KKZS422"
+    apiKey: "AIzaSyCKaW4Bigj48hmNLqOHUEYtNp7Ys1I5Eh8",
+    authDomain: "octo-net.firebaseapp.com",
+    projectId: "octo-net",
+    storageBucket: "octo-net.appspot.com",
+    messagingSenderId: "87652945238",
+    appId: "1:87652945238:web:cd9118ff7ed954501b1af7",
+    measurementId: "G-4SDRW6JPW2"
 };
 
 const firebaseApp = firebase.initializeApp(firebaseConfig);
