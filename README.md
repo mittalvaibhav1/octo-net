@@ -1,5 +1,6 @@
 # OctoNet
-A real-time peer-to-peer communication app that supports text (with gif support), voice, and video modes of communication. Built using react, redux-toolkit, framer-motion, material-ui, web services, firebase, and webRTC. <br/>
+A real-time peer-to-peer communication app that supports text (with gif support), voice, and video modes of communication. Built using react, redux-toolkit, framer-motion, material-ui, web services, firebase, and webRTC. <br/><br/>
+`Note: This is not production-ready. It has a few bugs which I'll be fixing over-time. Thankyou.`
 
 ## Sample Screenshots
 ![1](https://user-images.githubusercontent.com/53215737/108964607-ada4c100-76a1-11eb-9a1f-84d4ec97f042.png) <br/><br/>
